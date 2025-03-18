@@ -33,6 +33,6 @@ Available functions: `get_tester_batch`, `word_length`, `capital_counts`.
 
 `get_tester_batch`: generate test samples using the test set.
 
-`word_length`: count average word length in generated samples.
+`word_length`: collect word length distributions in generated samples.
 
 `capital_counts`: count irregular capital letters in generated samples, loosely defined as all capital letters that are not at the beginning of each line.
