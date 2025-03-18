@@ -1,5 +1,5 @@
 # 305B Final Project
-Title: Large Language Model with Self-Corrector
+Title: Self-Correcting Transformer Language Model
 
 Author: Peter Park
 
@@ -26,5 +26,13 @@ Available classes: `MultiHeadAttention`, `FeedForward`, `DeepFeedForward`, `Tran
 
 `Generator`: takes `Predictor` and `Corrector` as arguments and repeats simulate-pick.
 
-## debuggers.py
-Collects debugger functions.
+## testers.py
+Collects tester metric functions. 
+
+Available functions: `get_tester_batch`, `word_length`, `capital_counts`.
+
+`get_tester_batch`: generate test samples using the test set.
+
+`word_length`: count average word length in generated samples.
+
+`capital_counts`: count irregular capital letters in generated samples, loosely defined as all capital letters that are not at the beginning of each line.
