@@ -3,7 +3,7 @@ Title: Self-Correcting Transformer Language Model
 
 Author: Peter Park
 
-This repository provides replication codes for the HW4 Part 2 mini project. The project adds `corrector` on top of the vanilla transformer given in the homework. The codes consist of three parts.
+This repository provides replication codes for the HW4 Part 2 mini project. The project adds `corrector` on top of the vanilla transformer given in the homework. The codes consist of four parts.
 
 ## main.py
 Executes functions and classes.
