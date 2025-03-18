@@ -1,5 +1,6 @@
 # 305B Final Project
 Title: Large Language Model with Self-Corrector
+
 Author: Peter Park
 
 This repository provides replication codes for the HW4 Part 2 mini project. The project adds `corrector` on top of the vanilla transformer given in the homework. The codes consist of three parts.
