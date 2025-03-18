@@ -24,100 +24,100 @@ torch.manual_seed(305)
 
 
 
-# # train predictor 
+# train predictor 
+predictor = architecture.Predictor(vocab_size, CONTEXT_WINDOW_SIZE).to(device)
+learning_rate = 1e-4
+optimizer = torch.optim.AdamW(predictor.parameters(), lr=learning_rate)
+
+eval_interval = 200
+
+loss_list = []
+
+for it in tqdm(range(LARGE_ITERS)):
+
+    # every once in a while evaluate the loss on train and val sets
+    if it % eval_interval == 0 or it == LARGE_ITERS - 1:
+        print(f"iteration {it}")
+        losses = estimate_loss(predictor, EVAL_ITERS, CONTEXT_WINDOW_SIZE, device)
+        print(f"step {it}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
+
+    # sample a batch of data
+    xb, yb = get_batch('train', CONTEXT_WINDOW_SIZE, device)
+
+    # evaluate the loss
+    logits, loss = predictor(xb, yb)
+    loss_list.append(loss.detach().item())
+    optimizer.zero_grad(set_to_none=True)
+    loss.backward()
+    optimizer.step()
+
+# Check loss convergence
+plt.figure(figsize=(6, 2))
+plt.plot(loss_list)
+plt.xlabel('Iter')
+plt.ylabel('Mean loss')
+plt.savefig('predictor_loss.pdf')
+
+
+# train corrector
+corrector = architecture.Corrector(vocab_size, CONTEXT_WINDOW_SIZE, PREDICTION_WINDOW_SIZE).to(device)
+learning_rate = 1e-4
+optimizer = torch.optim.AdamW(corrector.parameters(), lr=learning_rate)
+
+eval_interval = 200
+
+loss_list = []
+
+for it in tqdm(range(LARGE_ITERS)):
+
+    # every once in a while evaluate the loss on train and val sets
+    if it % eval_interval == 0 or it == LARGE_ITERS - 1:
+        print(f"iteration {it}")
+        losses = estimate_corrector_loss(corrector, EVAL_ITERS, CONTEXT_WINDOW_SIZE, PREDICTION_WINDOW_SIZE, device)
+        print(f"step {it}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
+
+    # sample a batch of data
+    text, index, target = get_corrector_batch('train', CONTEXT_WINDOW_SIZE, PREDICTION_WINDOW_SIZE, device)
+
+    # evaluate the loss
+    loss = corrector(text, index, target)
+    loss_list.append(loss.detach().item())
+    optimizer.zero_grad(set_to_none=True)
+    loss.backward()
+    optimizer.step()
+
+# Check loss convergence
+plt.figure(figsize=(6, 2))
+plt.plot(loss_list)
+plt.xlabel('Iter')
+plt.ylabel('Mean loss')
+plt.savefig('corrector_loss.pdf')
+
+torch.save(predictor.state_dict(), 'predictor.pth')
+torch.save(corrector.state_dict(), 'corrector.pth')
+
+
 # predictor = architecture.Predictor(vocab_size, CONTEXT_WINDOW_SIZE).to(device)
-# learning_rate = 1e-4
-# optimizer = torch.optim.AdamW(predictor.parameters(), lr=learning_rate)
-
-# eval_interval = 200
-
-# loss_list = []
-
-# for it in tqdm(range(LARGE_ITERS)):
-
-#     # every once in a while evaluate the loss on train and val sets
-#     if it % eval_interval == 0 or it == LARGE_ITERS - 1:
-#         print(f"iteration {it}")
-#         losses = estimate_loss(predictor, EVAL_ITERS, CONTEXT_WINDOW_SIZE, device)
-#         print(f"step {it}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
-
-#     # sample a batch of data
-#     xb, yb = get_batch('train', CONTEXT_WINDOW_SIZE, device)
-
-#     # evaluate the loss
-#     logits, loss = predictor(xb, yb)
-#     loss_list.append(loss.detach().item())
-#     optimizer.zero_grad(set_to_none=True)
-#     loss.backward()
-#     optimizer.step()
-
-# # Check loss convergence
-# plt.figure(figsize=(6, 2))
-# plt.plot(loss_list)
-# plt.xlabel('Iter')
-# plt.ylabel('Mean loss')
-# plt.savefig('predictor_loss.pdf')
-
-
-# # train corrector
 # corrector = architecture.Corrector(vocab_size, CONTEXT_WINDOW_SIZE, PREDICTION_WINDOW_SIZE).to(device)
-# learning_rate = 1e-4
-# optimizer = torch.optim.AdamW(corrector.parameters(), lr=learning_rate)
-
-# eval_interval = 200
-
-# loss_list = []
-
-# for it in tqdm(range(LARGE_ITERS)):
-
-#     # every once in a while evaluate the loss on train and val sets
-#     if it % eval_interval == 0 or it == LARGE_ITERS - 1:
-#         print(f"iteration {it}")
-#         losses = estimate_corrector_loss(corrector, EVAL_ITERS, CONTEXT_WINDOW_SIZE, PREDICTION_WINDOW_SIZE, device)
-#         print(f"step {it}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
-
-#     # sample a batch of data
-#     text, index, target = get_corrector_batch('train', CONTEXT_WINDOW_SIZE, PREDICTION_WINDOW_SIZE, device)
-
-#     # evaluate the loss
-#     loss = corrector(text, index, target)
-#     loss_list.append(loss.detach().item())
-#     optimizer.zero_grad(set_to_none=True)
-#     loss.backward()
-#     optimizer.step()
-
-# # Check loss convergence
-# plt.figure(figsize=(6, 2))
-# plt.plot(loss_list)
-# plt.xlabel('Iter')
-# plt.ylabel('Mean loss')
-# plt.savefig('corrector_loss.pdf')
-
-# torch.save(predictor.state_dict(), 'predictor.pth')
-# torch.save(corrector.state_dict(), 'corrector.pth')
-
-
-# # predictor = architecture.Predictor(vocab_size, CONTEXT_WINDOW_SIZE).to(device)
-# # corrector = architecture.Corrector(vocab_size, CONTEXT_WINDOW_SIZE, PREDICTION_WINDOW_SIZE).to(device)
-# # predictor.load_state_dict(torch.load('predictor.pth'))
-# # corrector.load_state_dict(torch.load('corrector.pth'))
+# predictor.load_state_dict(torch.load('predictor.pth'))
+# corrector.load_state_dict(torch.load('corrector.pth'))
 
 
 
-# # run generator / predictor generate
-# contexts = testers.get_tester_batch('test', CONTEXT_WINDOW_SIZE, device, batch_size=100)
-# generator = architecture.Generator(vocab_size, predictor, corrector).to(device)
-# gen_text = generator(contexts, CONTEXT_WINDOW_SIZE, NUM_SIMULATIONS)
-# pred_text = predictor.generate(contexts, CONTEXT_WINDOW_SIZE)
+# run generator / predictor generate
+contexts = testers.get_tester_batch('test', CONTEXT_WINDOW_SIZE, device, batch_size=100)
+generator = architecture.Generator(vocab_size, predictor, corrector).to(device)
+gen_text = generator(contexts, CONTEXT_WINDOW_SIZE, NUM_SIMULATIONS)
+pred_text = predictor.generate(contexts, CONTEXT_WINDOW_SIZE)
 
-# torch.save(gen_text, 'gen_text.pth')
-# torch.save(pred_text, 'pred_text.pth')
+torch.save(gen_text, 'gen_text.pth')
+torch.save(pred_text, 'pred_text.pth')
 
-# decode(gen_text[0].tolist())
-# decode(pred_text[0].tolist())
+decode(gen_text[0].tolist())
+decode(pred_text[0].tolist())
 
-gen_text = torch.load('gen_text.pth')
-pred_text = torch.load('pred_text.pth')
+# gen_text = torch.load('gen_text.pth')
+# pred_text = torch.load('pred_text.pth')
 
 
 # compare word lengths
